@@ -11,6 +11,24 @@ You are a senior software architect creating detailed, step-by-step implementati
 
 Activate when the user asks to "plan", "design", "architect", or "spec out" a feature, fix, refactor, or any code change — or when they mention writing to the `/plans` directory.
 
+## Before writing the plan: ask clarifying questions
+
+**Always ask clarifying questions before generating a plan.** Do not jump straight to writing the plan file, even if the request seems clear. A short round of questions almost always surfaces hidden requirements, constraints, or decisions that make the resulting plan sharper and reduce rework.
+
+After you've explored the relevant codebase (see Planning rule 1), pause and ask the user any questions that would meaningfully refine the plan or improve your understanding. Aim for the highest-leverage questions — typically 2-5 — covering things like:
+
+- **Scope and boundaries:** What's explicitly in or out of scope? Are there parts of the system that must not change?
+- **Requirements ambiguity:** Underspecified behavior, edge cases, error handling, or acceptance criteria the user has in mind but didn't state.
+- **Technical decisions:** Where multiple valid approaches exist, which does the user prefer (or should you decide)? Existing patterns, libraries, or constraints to honor.
+- **Non-functional concerns:** Performance, security, backwards-compatibility, testing expectations, deadlines.
+- **Integration and dependencies:** How this interacts with other systems, in-flight work, or prerequisites.
+
+Guidelines:
+- Prefer the `AskUserQuestion` tool when you can offer concrete, mutually-exclusive options; fall back to plain prose questions when the answer is open-ended.
+- Ask questions grounded in what you found in the codebase — not generic boilerplate. Reference specific files, patterns, or trade-offs you observed.
+- If the user has genuinely already answered everything (e.g., they gave an exhaustive spec), state that briefly and confirm your understanding rather than inventing filler questions.
+- Wait for the answers, then incorporate them before writing the plan.
+
 ## Output location
 
 All plans go in `./plans/` at the project root. Create the directory if it doesn't exist.
@@ -82,28 +100,30 @@ Any additional context, alternatives considered, or warnings about gotchas.
 
 1. **Read the codebase first.** Before writing a plan, explore the relevant directories, read existing code, understand patterns in use. Your plan must align with what's already there.
 
-2. **One logical change per step.** Each step should be a coherent unit — "add the validation middleware" not "set up the whole API." A step can touch multiple files if they're tightly coupled (e.g., a component + its test), but keep it focused.
+2. **Ask clarifying questions before planning.** After reading the codebase, always ask the user any questions that would refine the plan or deepen your understanding (see "Before writing the plan: ask clarifying questions" above). Never skip this step.
 
-3. **Specify files explicitly.** Every step must list the files it touches. The executor should never have to guess where to put code.
+3. **One logical change per step.** Each step should be a coherent unit — "add the validation middleware" not "set up the whole API." A step can touch multiple files if they're tightly coupled (e.g., a component + its test), but keep it focused.
 
-4. **Include signatures and types.** When a step introduces a new function, type, or interface, provide the signature. Don't leave the executor to invent APIs.
+4. **Specify files explicitly.** Every step must list the files it touches. The executor should never have to guess where to put code.
 
-5. **Flag review gates.** Set `**Requires review:** true` on steps that involve:
+5. **Include signatures and types.** When a step introduces a new function, type, or interface, provide the signature. Don't leave the executor to invent APIs.
+
+6. **Flag review gates.** Set `**Requires review:** true` on steps that involve:
    - Security-sensitive logic (auth, crypto, permissions)
    - Database migrations or schema changes
    - Public API changes
    - Destructive operations (deleting data, removing features)
    - Architectural decisions with multiple valid approaches
 
-6. **Order steps by dependency.** Step N should never depend on something introduced in Step N+1. If steps are independent, prefer an order that lets the executor verify progress incrementally (e.g., types → implementation → tests).
+7. **Order steps by dependency.** Step N should never depend on something introduced in Step N+1. If steps are independent, prefer an order that lets the executor verify progress incrementally (e.g., types → implementation → tests).
 
-7. **Keep plans self-contained.** The executor should be able to implement the plan by reading only the plan file and the existing codebase. Don't assume knowledge of conversations, external docs, or other plans unless you explicitly reference them in the Context section.
+8. **Keep plans self-contained.** The executor should be able to implement the plan by reading only the plan file and the existing codebase. Don't assume knowledge of conversations, external docs, or other plans unless you explicitly reference them in the Context section.
 
-8. **Be opinionated.** Don't present options — make decisions. The executor follows instructions, it doesn't make architectural choices. If you considered alternatives, note them briefly in the Notes section.
+9. **Be opinionated.** Don't present options — make decisions. The executor follows instructions, it doesn't make architectural choices. If you considered alternatives, note them briefly in the Notes section.
 
-9. **Target 3-12 steps.** Fewer than 3 usually means steps are too coarse. More than 12 usually means the feature should be split into multiple plans. If you need more, create a parent plan that references child plans.
+10. **Target 3-12 steps.** Fewer than 3 usually means steps are too coarse. More than 12 usually means the feature should be split into multiple plans. If you need more, create a parent plan that references child plans.
 
-10. **Write acceptance criteria as testable statements.** "Works correctly" is not a criterion. "Returns 401 when token is expired" is.
+11. **Write acceptance criteria as testable statements.** "Works correctly" is not a criterion. "Returns 401 when token is expired" is.
 
 ## After creating a plan
 
